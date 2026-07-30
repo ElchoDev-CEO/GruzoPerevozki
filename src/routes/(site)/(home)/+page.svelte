@@ -1,18 +1,16 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Hero from './sections/Hero.svelte';
-	import About from './sections/About.svelte';
 	import Services from './sections/Services.svelte';
+	import Process from './sections/Process.svelte';
 	import Regions from './sections/Regions.svelte';
-	import CargoTypes from './sections/CargoTypes.svelte';
-	import Capacity from './sections/Capacity.svelte';
+	import Fleet from './sections/Fleet.svelte';
 	import WhyChooseUs from './sections/WhyChooseUs.svelte';
-	import Reviews from './sections/Reviews.svelte';
 	import Faq from './sections/Faq.svelte';
 	import Contact from './sections/Contact.svelte';
 	import { site } from '@/lib/config/site';
 
-	const socialImage = new URL('images/hero-truck.jpg', site.url).href;
+	const socialImage = new URL('images/og-cargo-kg.jpg', site.url).href;
 	const structuredData = JSON.stringify({
 		'@context': 'https://schema.org',
 		'@graph': [
@@ -21,7 +19,6 @@
 				'@id': `${site.url}#organization`,
 				name: site.brand,
 				url: site.url,
-				image: socialImage,
 				telephone: site.phones[0],
 				areaServed: {
 					'@type': 'Country',
@@ -32,7 +29,7 @@
 					telephone: site.phones[0],
 					contactType: 'customer service',
 					areaServed: 'KG',
-					availableLanguage: ['ru', 'ky']
+					availableLanguage: ['ru']
 				}
 			},
 			{
@@ -62,6 +59,8 @@
 	<meta property="og:description" content={$_('home.meta.ogDescription')} />
 	<meta property="og:image" content={socialImage} />
 	<meta property="og:image:alt" content={$_('home.meta.ogImageAlt')} />
+	<meta property="og:image:width" content="1200" />
+	<meta property="og:image:height" content="630" />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={$_('home.meta.ogTitle')} />
@@ -72,12 +71,10 @@
 </svelte:head>
 
 <Hero />
-<About />
 <Services />
+<Process />
 <Regions />
-<CargoTypes />
-<Capacity />
+<Fleet />
 <WhyChooseUs />
-<Reviews />
 <Faq />
 <Contact />

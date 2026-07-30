@@ -1,6 +1,6 @@
 /// <reference types="@testing-library/jest-dom/vitest" />
 import { describe, it, expect } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/svelte';
+import { render, screen } from '@testing-library/svelte';
 import Accordion from '@/components/ui/Accordion.svelte';
 
 const items = [
@@ -9,33 +9,33 @@ const items = [
 ];
 
 describe('Accordion', () => {
-	it('по умолчанию все закрыты', () => {
-		render(Accordion, { items });
-		const triggers = screen.getAllByRole('button');
-		expect(triggers[0]).toHaveAttribute('aria-expanded', 'false');
+	it('рендерит все вопросы и ответы в DOM', () => {
+		const { container } = render(Accordion, { items });
+
+		expect(container.querySelectorAll('details')).toHaveLength(items.length);
+		expect(container.querySelectorAll('summary')).toHaveLength(items.length);
+		expect(screen.getByText('Ответ 1')).toBeInTheDocument();
+		expect(screen.getByText('Ответ 2')).toBeInTheDocument();
 	});
 
-	it('клик открывает элемент', async () => {
-		render(Accordion, { items });
-		const triggers = screen.getAllByRole('button');
-		await fireEvent.click(triggers[0]);
-		expect(triggers[0]).toHaveAttribute('aria-expanded', 'true');
+	it('открывает первый пункт по умолчанию', () => {
+		const { container } = render(Accordion, { items });
+		const details = container.querySelectorAll('details');
+
+		expect(details[0]).toHaveAttribute('open');
+		expect(details[1]).not.toHaveAttribute('open');
 	});
 
-	it('открытие второго закрывает первый (single)', async () => {
-		render(Accordion, { items });
-		const triggers = screen.getAllByRole('button');
-		await fireEvent.click(triggers[0]);
-		await fireEvent.click(triggers[1]);
-		expect(triggers[0]).toHaveAttribute('aria-expanded', 'false');
-		expect(triggers[1]).toHaveAttribute('aria-expanded', 'true');
-	});
+	it('связывает каждый summary с соответствующей панелью', () => {
+		const { container } = render(Accordion, { items });
 
-	it('повторный клик закрывает (collapsible)', async () => {
-		render(Accordion, { items });
-		const triggers = screen.getAllByRole('button');
-		await fireEvent.click(triggers[0]);
-		await fireEvent.click(triggers[0]);
-		expect(triggers[0]).toHaveAttribute('aria-expanded', 'false');
+		for (const item of items) {
+			const summary = container.querySelector(`#accordion-question-${item.id}`);
+			const panel = container.querySelector(`#accordion-panel-${item.id}`);
+
+			expect(summary).toHaveAttribute('aria-controls', `accordion-panel-${item.id}`);
+			expect(panel).toHaveAttribute('role', 'region');
+			expect(panel).toHaveAttribute('aria-labelledby', `accordion-question-${item.id}`);
+		}
 	});
 });

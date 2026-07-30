@@ -1,0 +1,394 @@
+<script lang="ts">
+	import { _ } from 'svelte-i18n';
+	import Icon from '@/components/ui/Icon.svelte';
+	import type { FleetPhoto } from '@/lib/data/fleet';
+
+	interface Props {
+		photos: readonly FleetPhoto[];
+		activeIndex: number;
+		lastIndex: number;
+		autoplayRunning: boolean;
+		autoplaySeconds: number;
+		autoplayDelay: number;
+		onNavigate: (index: number) => void;
+	}
+
+	let {
+		photos,
+		activeIndex,
+		lastIndex,
+		autoplayRunning,
+		autoplaySeconds,
+		autoplayDelay,
+		onNavigate
+	}: Props = $props();
+
+	const autoplayDuration = $derived(
+		$_('home.fleet.autoplayDuration', { values: { seconds: autoplaySeconds } })
+	);
+
+	const handleKeydown = (event: KeyboardEvent): void => {
+		if (event.key === 'ArrowLeft') {
+			event.preventDefault();
+			onNavigate(activeIndex - 1);
+		}
+
+		if (event.key === 'ArrowRight') {
+			event.preventDefault();
+			onNavigate(activeIndex + 1);
+		}
+
+		if (event.key === 'Home') {
+			event.preventDefault();
+			onNavigate(0);
+		}
+
+		if (event.key === 'End') {
+			event.preventDefault();
+			onNavigate(lastIndex);
+		}
+	};
+</script>
+
+<div class="fleet-panel">
+	<div
+		class="fleet-panel__status"
+		aria-live={autoplayRunning ? 'off' : 'polite'}
+		aria-atomic="true"
+	>
+		<p>
+			{String(activeIndex + 1).padStart(2, '0')}
+			<span>/ {String(photos.length).padStart(2, '0')}</span>
+		</p>
+		<div class="fleet-panel__status-copy">
+			{#each photos as photo, index (photo.id)}
+				<div
+					class="fleet-panel__status-item"
+					data-active={index === activeIndex}
+					aria-hidden={index === activeIndex ? undefined : 'true'}
+				>
+					<h3>{$_(photo.captionKey)}</h3>
+					<p>{$_(photo.descriptionKey)}</p>
+				</div>
+			{/each}
+		</div>
+	</div>
+
+	<div
+		class="fleet-panel__progress"
+		data-state={autoplayRunning ? 'running' : 'paused'}
+		style={`--autoplay-duration: ${autoplayDelay}ms`}
+		aria-hidden="true"
+	>
+		<div class="fleet-panel__progress-meta">
+			<span>{$_('home.fleet.autoplayProgress')}</span>
+			<span>
+				{autoplayRunning ? autoplayDuration : $_('home.fleet.autoplayProgressPaused')}
+			</span>
+		</div>
+		<div class="fleet-panel__progress-track">
+			{#key activeIndex}
+				<span class="fleet-panel__progress-fill"></span>
+			{/key}
+		</div>
+	</div>
+
+	<div class="fleet-panel__controls">
+		<button
+			type="button"
+			class="fleet-panel__arrow fleet-panel__arrow--previous"
+			aria-label={$_('home.fleet.previous')}
+			title={$_('home.fleet.previous')}
+			disabled={activeIndex === 0}
+			onkeydown={handleKeydown}
+			onclick={() => onNavigate(activeIndex - 1)}
+		>
+			<Icon name="arrow-right" size={21} strokeWidth={1.8} />
+		</button>
+		<button
+			type="button"
+			class="fleet-panel__arrow"
+			aria-label={$_('home.fleet.next')}
+			title={$_('home.fleet.next')}
+			disabled={activeIndex === lastIndex}
+			onkeydown={handleKeydown}
+			onclick={() => onNavigate(activeIndex + 1)}
+		>
+			<Icon name="arrow-right" size={21} strokeWidth={1.8} />
+		</button>
+	</div>
+
+	<div class="fleet-panel__thumbnails" role="group" aria-label={$_('home.fleet.thumbnailsLabel')}>
+		{#each photos as photo, index (photo.id)}
+			<button
+				type="button"
+				class="fleet-panel__thumbnail"
+				aria-label="{index + 1}. {$_(photo.captionKey)}"
+				aria-current={index === activeIndex ? 'true' : undefined}
+				tabindex={index === activeIndex ? 0 : -1}
+				onkeydown={handleKeydown}
+				onclick={() => onNavigate(index)}
+			>
+				<picture>
+					<source type="image/avif" srcset="{photo.imageBase}-480.avif" />
+					<img
+						src="{photo.imageBase}-480.webp"
+						width="480"
+						height="640"
+						alt=""
+						loading="lazy"
+						decoding="async"
+					/>
+				</picture>
+				<span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+			</button>
+		{/each}
+	</div>
+</div>
+
+<style lang="scss">
+	.fleet-panel {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+
+		&__status {
+			min-height: 9.5rem;
+
+			> p:first-child {
+				color: var(--color-accent);
+				font-family: var(--font-mono);
+				font-size: 0.75rem;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+
+				span {
+					color: var(--color-on-dark-muted);
+				}
+			}
+
+			&-copy {
+				display: grid;
+				margin-top: 18px;
+			}
+
+			&-item {
+				grid-area: 1 / 1;
+				min-width: 0;
+				visibility: hidden;
+				opacity: 0;
+				transform: translateY(4px);
+				transition:
+					opacity var(--motion-fast) var(--ease-standard),
+					transform var(--motion-fast) var(--ease-out);
+
+				&[data-active='true'] {
+					visibility: visible;
+					opacity: 1;
+					transform: translateY(0);
+				}
+
+				h3 {
+					max-width: 16ch;
+					font-size: clamp(1.75rem, 3vw, 2.75rem);
+					font-weight: 720;
+				}
+
+				p {
+					max-width: 34rem;
+					margin-top: 14px;
+					color: var(--color-on-dark-muted);
+					line-height: 1.65;
+				}
+			}
+		}
+
+		&__progress {
+			--progress-play-state: paused;
+			--progress-status-color: var(--color-on-dark-muted);
+
+			display: grid;
+			gap: 8px;
+			margin-top: 24px;
+
+			&[data-state='running'] {
+				--progress-play-state: running;
+				--progress-status-color: var(--color-accent);
+			}
+
+			&-meta {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 16px;
+				color: var(--color-on-dark-muted);
+				font-family: var(--font-mono);
+				font-size: 0.625rem;
+				font-weight: 700;
+				letter-spacing: 0.1em;
+				line-height: 1.2;
+				text-transform: uppercase;
+
+				span:last-child {
+					color: var(--progress-status-color);
+					transition: color var(--motion-fast) var(--ease-standard);
+				}
+			}
+
+			&-track {
+				position: relative;
+				height: 2px;
+				overflow: hidden;
+				background: rgb(var(--rgb-surface) / 0.13);
+
+				.fleet-panel__progress-fill {
+					position: absolute;
+					inset: 0;
+					background: var(--color-accent);
+					transform: scaleX(0);
+					transform-origin: left center;
+					animation: fleet-autoplay-progress var(--autoplay-duration) linear forwards;
+					animation-play-state: var(--progress-play-state);
+				}
+			}
+		}
+
+		&__controls {
+			display: flex;
+			gap: 10px;
+			margin-top: 18px;
+		}
+
+		&__arrow {
+			display: grid;
+			width: 48px;
+			height: 48px;
+			padding: 0;
+			place-items: center;
+			color: var(--color-on-dark);
+			background: transparent;
+			border: 1px solid var(--color-line-dark);
+			border-radius: var(--radius-full);
+			transition:
+				color var(--motion-fast) var(--ease-standard),
+				background-color var(--motion-fast) var(--ease-standard),
+				border-color var(--motion-fast) var(--ease-standard),
+				transform var(--motion-fast) var(--ease-out);
+
+			&--previous {
+				:global(.icon) {
+					transform: rotate(180deg);
+				}
+			}
+
+			&:disabled {
+				cursor: not-allowed;
+				opacity: 0.35;
+			}
+
+			@media (hover: hover) and (pointer: fine) {
+				&:not(:disabled):hover {
+					color: var(--color-ink);
+					background: var(--color-accent);
+					border-color: var(--color-accent);
+					transform: translateY(-2px);
+				}
+			}
+		}
+
+		&__thumbnails {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 8px;
+			margin-top: 30px;
+		}
+
+		&__thumbnail {
+			position: relative;
+			display: grid;
+			aspect-ratio: 1;
+			min-width: 0;
+			overflow: hidden;
+			padding: 0;
+			background: var(--color-ink-soft);
+			border: 1px solid var(--color-line-dark);
+			border-radius: var(--radius-sm);
+			opacity: 0.58;
+			transition:
+				opacity var(--motion-fast) var(--ease-standard),
+				border-color var(--motion-fast) var(--ease-standard),
+				transform var(--motion-fast) var(--ease-out);
+
+			picture,
+			img {
+				width: 100%;
+				height: 100%;
+			}
+
+			img {
+				object-fit: cover;
+			}
+
+			> span {
+				position: absolute;
+				right: 5px;
+				bottom: 4px;
+				padding: 2px 4px;
+				color: var(--color-on-dark);
+				background: rgb(var(--rgb-ink) / 0.78);
+				border-radius: 3px;
+				font-family: var(--font-mono);
+				font-size: 0.5625rem;
+				font-weight: 700;
+			}
+
+			&[aria-current='true'] {
+				border-color: var(--color-accent);
+				opacity: 1;
+				box-shadow: inset 0 0 0 1px var(--color-accent);
+			}
+
+			@media (hover: hover) and (pointer: fine) {
+				&:hover {
+					opacity: 1;
+					transform: translateY(-2px);
+				}
+			}
+		}
+
+		@media (min-width: 64rem) {
+			padding: 18px 10px 8px 0;
+
+			&__progress {
+				margin-top: auto;
+			}
+		}
+
+		@media (max-width: 39.99rem) {
+			&__status {
+				min-height: 8.75rem;
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			&__arrow,
+			&__thumbnail {
+				transition-property: color, background-color, border-color, opacity;
+
+				&:hover {
+					transform: none;
+				}
+			}
+		}
+	}
+
+	@keyframes fleet-autoplay-progress {
+		from {
+			transform: scaleX(0);
+		}
+
+		to {
+			transform: scaleX(1);
+		}
+	}
+</style>

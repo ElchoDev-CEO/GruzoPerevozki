@@ -1,32 +1,60 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import SectionHeading from '@/components/ui/SectionHeading.svelte';
 	import Accordion from '@/components/ui/Accordion.svelte';
+	import SectionHeading from '@/components/ui/SectionHeading.svelte';
 	import { faqEntries } from '@/lib/data/faq';
 
 	const items = $derived(
-		faqEntries.map((e) => ({ id: e.id, question: $_(e.questionKey), answer: $_(e.answerKey) }))
+		faqEntries.map((entry) => ({
+			id: entry.id,
+			question: $_(entry.questionKey),
+			answer: $_(entry.answerKey)
+		}))
 	);
 </script>
 
-<section class="faq">
-	<div class="container faq__inner">
-		<SectionHeading title={$_('home.faq.h2')} subtitle={$_('home.faq.sub')} />
-		<Accordion {items} />
+<section class="faq section-space">
+	<div class="container faq__layout">
+		<div class="faq__heading motion-reveal">
+			<SectionHeading
+				eyebrow={$_('home.faq.eyebrow')}
+				title={$_('home.faq.h2')}
+				subtitle={$_('home.faq.sub')}
+			/>
+		</div>
+		<div class="faq__accordion motion-reveal">
+			<Accordion {items} />
+		</div>
 	</div>
 </section>
 
 <style lang="scss">
 	.faq {
-		background: var(--white);
-		padding: 64px 0;
+		background: var(--color-canvas-muted);
 
-		&__inner {
-			max-width: var(--container-4xl);
+		&__layout {
+			display: grid;
+			gap: clamp(2.5rem, 6vw, 6rem);
 		}
 
-		@media (min-width: 768px) {
-			padding: 96px 0;
+		&__heading {
+			align-self: start;
+			min-width: 0;
+		}
+
+		&__accordion {
+			min-width: 0;
+		}
+
+		@media (min-width: 60rem) {
+			&__layout {
+				grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr);
+			}
+
+			&__heading {
+				position: sticky;
+				top: calc(var(--header-h) + 2rem);
+			}
 		}
 	}
 </style>

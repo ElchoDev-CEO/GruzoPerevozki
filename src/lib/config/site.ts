@@ -1,5 +1,5 @@
 export const site = {
-	brand: 'Cargo KG',
+	brand: 'Грузоперевозка',
 	url: 'https://gruzoperevozki.kg/',
 	locale: 'ru_KG',
 	areaServed: 'Кыргызстан',
