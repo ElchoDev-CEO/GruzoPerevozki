@@ -1,6 +1,5 @@
 <script lang="ts">
 	import '@/app.css';
-	import '@/lib/icons';
 	import type { Snippet } from 'svelte';
 
 	interface Props {

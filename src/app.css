@@ -1,51 +1,58 @@
 :root {
-	/* Бренд */
-	--brand: #ffc107;
-	--brand-hover: #ffb300;
+	--rgb-ink: 8 26 36;
+	--rgb-surface: 255 255 255;
+	--rgb-on-dark: 248 250 248;
+	--rgb-accent: 242 179 33;
 
-	/* Нейтрали (Tailwind gray; уточнить при сверке) */
-	--white: #ffffff;
-	--gray-50: #f9fafb;
-	--gray-100: #f3f4f6;
-	--gray-200: #e5e7eb;
-	--gray-300: #d1d5db;
-	--gray-400: #9ca3af;
-	--gray-500: #6b7280;
-	--gray-600: #4b5563;
-	--gray-700: #374151;
-	--gray-800: #1f2937;
-	--gray-900: #111827;
+	--color-ink: rgb(var(--rgb-ink));
+	--color-ink-soft: #102d3a;
+	--color-surface: rgb(var(--rgb-surface));
+	--color-canvas: #f4f7f5;
+	--color-canvas-muted: #e8eeeb;
+	--color-text: #10232d;
+	--color-ink-muted: #55676f;
+	--color-on-dark: rgb(var(--rgb-on-dark));
+	--color-on-dark-muted: #aab9bd;
+	--color-line: #d4ded9;
+	--color-line-dark: rgb(var(--rgb-surface) / 0.14);
+	--color-accent: rgb(var(--rgb-accent));
+	--color-accent-hover: #d99a08;
+	--color-accent-ink: #8a5b00;
+	--color-focus: #b47700;
 
-	/* Акценты карточек */
-	--whatsapp: #25d366;
-	--accent-blue: #3b82f6;
-	--accent-green: #22c55e;
-	--accent-purple: #a855f7;
-	--accent-pink: #ec4899;
-	--accent-indigo: #6366f1;
-	--accent-orange: #f97316;
-	--accent-cyan: #06b6d4;
+	--font-body:
+		'Avenir Next', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+		sans-serif;
+	--font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
 
-	/* Радиусы (Tailwind rounded-lg/xl/2xl/3xl/full) */
-	--radius-lg: 8px;
-	--radius-xl: 12px;
-	--radius-2xl: 16px;
-	--radius-3xl: 24px;
-	--radius-full: 9999px;
+	--container-max: 80rem;
+	--container-gutter: clamp(1.25rem, 4vw, 3.5rem);
+	--section-space: clamp(4.5rem, 9vw, 8rem);
+	--header-h: 4.5rem;
 
-	/* Тени (Tailwind shadow-sm/lg/xl/2xl) */
-	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-	--shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-	--shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+	--radius-sm: 0.5rem;
+	--radius-md: 0.875rem;
+	--radius-lg: 1.25rem;
+	--radius-xl: 2rem;
+	--radius-full: 999px;
 
-	/* Контейнер/секции */
-	--container-7xl: 1280px;
-	--container-4xl: 896px;
-	--container-padding: 16px;
+	--shadow-sm: 0 0.625rem 1.875rem rgb(var(--rgb-ink) / 0.08);
+	--shadow-md: 0 1.5rem 4.5rem rgb(var(--rgb-ink) / 0.14);
+	--shadow-accent: 0 1rem 2.5rem rgb(var(--rgb-accent) / 0.2);
 
-	/* Высота фикс-хедера (для scroll-margin-top) */
-	--header-h: 80px;
+	--motion-fast: 160ms;
+	--motion-base: 260ms;
+	--motion-slow: 700ms;
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+
+	--z-header: 40;
+	--z-floating: 50;
+
+	@media (max-width: 47.99rem) {
+		--header-h: 4rem;
+		--section-space: 4.5rem;
+	}
 }
 
 *,
@@ -57,36 +64,54 @@
 html {
 	font-size: 16px;
 	scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-	html {
-		scroll-behavior: auto;
-	}
+	scroll-padding-top: var(--header-h);
+	background: var(--color-canvas);
 }
 
 body {
 	margin: 0;
-	font-family:
-		ui-sans-serif,
-		system-ui,
-		-apple-system,
-		'Segoe UI',
-		Roboto,
-		Helvetica,
-		Arial,
-		sans-serif;
-	color: var(--gray-900);
-	background: var(--white);
-	line-height: 1.5;
+	color: var(--color-text);
+	background: var(--color-canvas);
+	font-family: var(--font-body);
+	font-size: 1rem;
+	line-height: 1.6;
 	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+main {
+	display: block;
 }
 
 h1,
 h2,
 h3,
-p {
+p,
+ul,
+ol,
+figure,
+blockquote {
 	margin: 0;
+}
+
+ul,
+ol {
+	padding: 0;
+}
+
+h1,
+h2,
+h3 {
+	color: inherit;
+	line-height: 1.06;
+	letter-spacing: -0.035em;
+	overflow-wrap: anywhere;
+	text-wrap: balance;
+}
+
+p {
+	overflow-wrap: anywhere;
+	text-wrap: pretty;
 }
 
 a {
@@ -94,21 +119,109 @@ a {
 	text-decoration: none;
 }
 
+button,
+input,
+select,
+textarea {
+	color: inherit;
+	font: inherit;
+}
+
+button,
+summary {
+	-webkit-tap-highlight-color: transparent;
+}
+
 button {
-	font-family: inherit;
 	cursor: pointer;
 }
 
-/* Общий контейнер */
-.container {
-	width: 100%;
-	max-width: var(--container-7xl);
-	margin: 0 auto;
-	padding-left: var(--container-padding);
-	padding-right: var(--container-padding);
+img,
+picture,
+svg {
+	display: block;
+	max-width: 100%;
 }
 
-/* Якоря не прячутся под фикс-хедером */
+::selection {
+	color: var(--color-ink);
+	background: var(--color-accent);
+}
+
+:where(a, button, summary, input, select, textarea):focus-visible {
+	outline: 3px solid var(--color-focus);
+	outline-offset: 3px;
+}
+
+.container {
+	width: min(100%, calc(var(--container-max) + var(--container-gutter) * 2));
+	margin-inline: auto;
+	padding-inline: var(--container-gutter);
+}
+
+.section-space {
+	padding-block: var(--section-space);
+}
+
+.skip-link {
+	position: fixed;
+	top: 0.75rem;
+	left: 0.75rem;
+	z-index: calc(var(--z-floating) + 1);
+	padding: 0.75rem 1rem;
+	color: var(--color-ink);
+	background: var(--color-accent);
+	border-radius: var(--radius-sm);
+	font-weight: 700;
+	transform: translateY(-200%);
+	transition: transform var(--motion-fast) var(--ease-out);
+
+	&:focus {
+		transform: translateY(0);
+	}
+}
+
 :where(section[id]) {
 	scroll-margin-top: var(--header-h);
+}
+
+@keyframes reveal-section {
+	from {
+		transform: translateY(1.5rem);
+	}
+
+	to {
+		transform: translateY(0);
+	}
+}
+
+.motion-reveal {
+	@supports (animation-timeline: view()) {
+		@media (min-width: 48rem) and (prefers-reduced-motion: no-preference) {
+			animation: reveal-section var(--motion-slow) var(--ease-out) both;
+			animation-timeline: view();
+			animation-range: entry 8% cover 28%;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		scroll-behavior: auto !important;
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+
+	.motion-reveal {
+		opacity: 1;
+		transform: none;
+		animation: none;
+	}
 }

@@ -1,110 +1,118 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
-	import Icon from '@iconify/svelte';
+	import Button from '@/components/ui/Button.svelte';
+	import Icon from '@/components/ui/Icon.svelte';
+	import Logo from '@/components/ui/Logo.svelte';
+	import MobileNavigation from '@/components/layout/MobileNavigation.svelte';
 	import { site } from '@/lib/config/site';
 	import { navLinks } from '@/lib/data/nav';
-	import IconBox from '@/components/ui/IconBox.svelte';
-	import Button from '@/components/ui/Button.svelte';
 
-	let menuOpen = $state(false);
+	let scrolled = $state(false);
 
 	$effect(() => {
-		const onResize = (): void => {
-			if (window.innerWidth >= 768) menuOpen = false;
+		const updateHeader = (): void => {
+			scrolled = window.scrollY > 16;
 		};
-		window.addEventListener('resize', onResize);
-		return () => window.removeEventListener('resize', onResize);
+
+		updateHeader();
+		window.addEventListener('scroll', updateHeader, { passive: true });
+		return () => window.removeEventListener('scroll', updateHeader);
 	});
 </script>
 
-<header class="header">
+<header class="header" class:header--scrolled={scrolled}>
 	<div class="container header__inner">
-		<a class="header__logo" href="/" aria-label={site.brand}>
-			<IconBox icon="lucide:truck" bg="var(--brand)" size={48} hoverScale />
-			<span class="header__brand">{site.brand}</span>
+		<a class="header__logo" href="/" aria-label="{site.brand} — {$_('home.a11y.homeLink')}">
+			<Logo inverse compact />
 		</a>
 
-		<nav class="header__nav">
+		<nav class="header__nav" aria-label={$_('home.a11y.primaryNav')}>
 			{#each navLinks as link}
-				<a class="header__link" href={link.href}>{$_(link.labelKey)}</a>
+				<a href={link.href}>{$_(link.labelKey)}</a>
 			{/each}
 		</nav>
 
 		<div class="header__cta">
-			<Button variant="primary" href="#contact">{$_('home.nav.cta')}</Button>
-		</div>
-
-		<button
-			class="header__burger"
-			aria-label="menu"
-			aria-expanded={menuOpen}
-			onclick={() => (menuOpen = !menuOpen)}
-		>
-			<Icon icon={menuOpen ? 'lucide:x' : 'lucide:menu'} width="24" height="24" />
-		</button>
-	</div>
-
-	{#if menuOpen}
-		<div class="container header__mobile">
-			{#each navLinks as link}
-				<a class="header__mobile-link" href={link.href} onclick={() => (menuOpen = false)}>
-					{$_(link.labelKey)}
-				</a>
-			{/each}
-			<Button variant="primary" href="#contact" onclick={() => (menuOpen = false)}>
+			<Button variant="primary" size="small" href="#contact">
 				{$_('home.nav.cta')}
+				<Icon name="arrow-right" size={16} />
 			</Button>
 		</div>
-	{/if}
+
+		<MobileNavigation />
+	</div>
 </header>
 
 <style lang="scss">
 	.header {
 		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 40;
-		background: rgba(255, 255, 255, 0.95);
-		backdrop-filter: blur(4px);
-		box-shadow: var(--shadow-sm);
+		inset: 0 0 auto;
+		z-index: var(--z-header);
+		height: var(--header-h);
+		color: var(--color-on-dark);
+		background: linear-gradient(180deg, rgb(var(--rgb-ink) / 0.78), transparent);
+		transition:
+			background-color var(--motion-base) var(--ease-standard),
+			border-color var(--motion-base) var(--ease-standard),
+			box-shadow var(--motion-base) var(--ease-standard);
+
+		&--scrolled {
+			background: rgb(var(--rgb-ink) / 0.97);
+			border-bottom: 1px solid var(--color-line-dark);
+			box-shadow: 0 8px 30px rgb(var(--rgb-ink) / 0.18);
+		}
 
 		&__inner {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
-			height: var(--header-h);
+			gap: 24px;
+			height: 100%;
 		}
 
 		&__logo {
-			display: flex;
-			align-items: center;
-			gap: 8px;
-
-			&:hover :global(.icon-box--hover) {
-				transform: scale(1.1);
-			}
-		}
-
-		&__brand {
-			font-size: 24px;
-			font-weight: 700;
-			color: var(--gray-900);
+			flex: 0 1 auto;
+			min-width: 0;
+			overflow: hidden;
+			border-radius: var(--radius-sm);
 		}
 
 		&__nav {
 			display: none;
 			align-items: center;
-			gap: 32px;
-		}
+			justify-content: center;
+			gap: clamp(1.25rem, 2.5vw, 2.5rem);
 
-		&__link {
-			font-weight: 500;
-			color: var(--gray-700);
-			transition: color 0.2s ease;
+			a {
+				position: relative;
+				padding-block: 10px;
+				color: var(--color-on-dark-muted);
+				font-size: 0.8125rem;
+				font-weight: 650;
+				transition: color var(--motion-fast) var(--ease-standard);
 
-			&:hover {
-				color: var(--brand);
+				&::after {
+					position: absolute;
+					right: 0;
+					bottom: 4px;
+					left: 0;
+					height: 2px;
+					background: var(--color-accent);
+					content: '';
+					transform: scaleX(0);
+					transform-origin: right;
+					transition: transform var(--motion-fast) var(--ease-out);
+				}
+
+				&:hover,
+				&:focus-visible {
+					color: var(--color-on-dark);
+
+					&::after {
+						transform: scaleX(1);
+						transform-origin: left;
+					}
+				}
 			}
 		}
 
@@ -112,45 +120,29 @@
 			display: none;
 		}
 
-		&__burger {
-			display: inline-flex;
-			padding: 8px;
-			background: none;
-			border: none;
-			color: var(--gray-700);
-			border-radius: var(--radius-lg);
-
-			&:hover {
-				background: var(--gray-100);
-			}
-		}
-
-		&__mobile {
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-			padding: 16px;
-			border-top: 1px solid var(--gray-100);
-		}
-
-		&__mobile-link {
-			text-align: left;
-			padding: 12px 16px;
-			color: var(--gray-700);
-			border-radius: var(--radius-lg);
-
-			&:hover {
-				background: var(--gray-50);
-			}
-		}
-
-		@media (min-width: 768px) {
+		@media (min-width: 64rem) {
 			&__nav,
 			&__cta {
 				display: flex;
 			}
-			&__burger {
-				display: none;
+
+			&--scrolled {
+				@supports (backdrop-filter: blur(8px)) {
+					background: rgb(var(--rgb-ink) / 0.9);
+					backdrop-filter: blur(8px);
+				}
+			}
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			transition: none;
+
+			&__nav {
+				a {
+					&::after {
+						transition: none;
+					}
+				}
 			}
 		}
 	}

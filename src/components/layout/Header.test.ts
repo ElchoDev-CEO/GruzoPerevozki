@@ -10,17 +10,21 @@ beforeEach(() => {
 });
 
 describe('Header', () => {
-	it('бургер-меню скрыто по умолчанию', () => {
+	it('переиспользует канонические ссылки навигации', () => {
 		render(Header);
-		const toggle = screen.getByLabelText('menu');
-		expect(toggle).toHaveAttribute('aria-expanded', 'false');
-		expect(screen.getByRole('link', { name: 'Услуги' })).toHaveAttribute('href', '#services');
+
+		expect(screen.getAllByRole('link', { name: 'Услуги' })[0]).toHaveAttribute('href', '#services');
+		expect(screen.getAllByRole('link', { name: 'Транспорт' })[0]).toHaveAttribute(
+			'href',
+			'#transport'
+		);
 	});
 
-	it('клик по бургеру открывает мобильное меню', async () => {
+	it('открывает мобильную навигацию нативным details', async () => {
 		render(Header);
-		const toggle = screen.getByLabelText('menu');
+		const toggle = screen.getByLabelText('Меню навигации');
+
 		await fireEvent.click(toggle);
-		expect(toggle).toHaveAttribute('aria-expanded', 'true');
+		expect(toggle.closest('details')).toHaveAttribute('open');
 	});
 });
