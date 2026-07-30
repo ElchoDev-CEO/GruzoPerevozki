@@ -61,6 +61,7 @@
 
 		&__grid {
 			display: grid;
+			grid-template-columns: minmax(0, 1fr);
 			gap: 40px;
 			padding-bottom: clamp(3rem, 6vw, 5rem);
 		}

@@ -4,7 +4,8 @@ import { site } from '../src/lib/config/site';
 test('главная страница объясняет услугу и показывает ключевые разделы', async ({ page }) => {
 	await page.goto('/');
 
-	await expect(page).toHaveTitle(/Грузоперевозки в Бишкеке и по Кыргызстану/);
+	await expect(page).toHaveTitle('Грузоперевозки в Бишкеке и по Кыргызстану — Грузоперевозка');
+	await expect(page.getByRole('link', { name: 'Грузоперевозка — на главную' })).toBeVisible();
 	await expect(
 		page.getByRole('heading', { name: /Грузоперевозки по Кыргызстану/, level: 1 })
 	).toBeVisible();
@@ -235,6 +236,10 @@ test('SEO metadata и crawl-файлы используют production domain', 
 
 	await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', site.url);
 	await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', site.url);
+	await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute(
+		'content',
+		'Грузоперевозка'
+	);
 	await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
 		'content',
 		`${site.url}images/og-cargo-kg.jpg`
@@ -249,6 +254,7 @@ test('SEO metadata и crawl-файлы используют production domain', 
 		(item: { '@type': string }) => item['@type'] === 'Organization'
 	);
 	expect(organization).toMatchObject({
+		name: 'Грузоперевозка',
 		url: site.url,
 		telephone: site.phones[0],
 		areaServed: { name: site.areaServed }
@@ -264,4 +270,8 @@ test('SEO metadata и crawl-файлы используют production domain', 
 	const robots = await request.get('/robots.txt');
 	expect(robots.ok()).toBe(true);
 	expect(await robots.text()).toContain(`Sitemap: ${site.url}sitemap.xml`);
+
+	const favicon = await request.get('/favicon.svg');
+	expect(favicon.ok()).toBe(true);
+	expect(await favicon.text()).toContain('<title>Грузоперевозка</title>');
 });

@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-	<title>Cargo KG</title>
+	<title>Грузоперевозка</title>
 	<rect width="64" height="64" rx="14" fill="#f2b321" />
 	<path d="M11 17h17l5 5h20" fill="none" stroke="#081a24" stroke-width="4" stroke-linecap="round" />
 	<circle cx="11" cy="17" r="3" fill="#081a24" />
