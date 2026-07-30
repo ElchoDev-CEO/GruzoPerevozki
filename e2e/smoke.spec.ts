@@ -42,6 +42,7 @@ test('карусель транспорта управляется кнопка�
 	const firstThumbnail = page.getByRole('button', { name: '1. Транспорт на маршруте' });
 	const secondThumbnail = page.getByRole('button', { name: '2. Груз в кузове' });
 	const lastThumbnail = page.getByRole('button', { name: '6. Транспорт в вечернем городе' });
+	const progress = page.locator('.fleet-panel__progress');
 
 	await expect(previous).toBeDisabled();
 	await expect(next).toBeEnabled();
@@ -49,10 +50,15 @@ test('карусель транспорта управляется кнопка�
 	await next.click();
 	await expect(secondThumbnail).toHaveAttribute('aria-current', 'true');
 	await expect(previous).toBeEnabled();
+	await expect(progress).toHaveAttribute('data-state', 'paused');
+
+	await page.mouse.move(0, 0);
+	await expect(progress).toHaveAttribute('data-state', 'running');
 
 	await secondThumbnail.press('End');
 	await expect(lastThumbnail).toHaveAttribute('aria-current', 'true');
 	await expect(next).toBeDisabled();
+	await expect(progress).toHaveAttribute('data-state', 'paused');
 
 	await lastThumbnail.press('Home');
 	await expect(firstThumbnail).toHaveAttribute('aria-current', 'true');

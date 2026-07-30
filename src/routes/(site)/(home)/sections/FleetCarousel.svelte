@@ -18,10 +18,10 @@
 	let track = $state<HTMLElement>();
 	let activeIndex = $state(0);
 	let autoplayDirection = $state<1 | -1>(1);
-	let autoplayPaused = $state(false);
-	let hasFocusWithin = $state(false);
+	let hasKeyboardFocusWithin = $state(false);
 	let isHovered = $state(false);
 	let isInViewport = $state(false);
+	let isPointerInteracting = $state(false);
 	let pageVisible = $state(true);
 	let reducedMotion = $state(true);
 	let scrollFrame: number | undefined;
@@ -31,10 +31,10 @@
 	const lastIndex = $derived(Math.max(photos.length - 1, 0));
 	const autoplayRunning = $derived(
 		photos.length > 1 &&
-			!autoplayPaused &&
-			!hasFocusWithin &&
+			!hasKeyboardFocusWithin &&
 			!isHovered &&
 			isInViewport &&
+			!isPointerInteracting &&
 			pageVisible &&
 			!reducedMotion
 	);
@@ -52,11 +52,10 @@
 		activeIndex = nextIndex;
 	};
 
-	const goTo = (index: number, pauseAutoplay = false): void => {
+	const goTo = (index: number): void => {
 		const nextIndex = Math.min(Math.max(index, 0), lastIndex);
 		const slide = getSlide(nextIndex);
 
-		if (pauseAutoplay) autoplayPaused = true;
 		setActive(nextIndex);
 		track?.scrollTo({
 			left: slide?.offsetLeft ?? 0,
@@ -65,7 +64,7 @@
 	};
 
 	const navigateManually = (index: number): void => {
-		goTo(index, true);
+		goTo(index);
 	};
 
 	const syncActiveSlide = (): void => {
@@ -106,16 +105,27 @@
 		const handleMouseLeave = (): void => {
 			isHovered = false;
 		};
-		const handleFocusIn = (): void => {
-			hasFocusWithin = true;
+		const handlePointerDown = (): void => {
+			hasKeyboardFocusWithin = false;
+		};
+		const handleKeyDown = (): void => {
+			hasKeyboardFocusWithin = true;
+		};
+		const handleFocusIn = (event: FocusEvent): void => {
+			const target = event.target;
+			hasKeyboardFocusWithin = target instanceof Element && target.matches(':focus-visible');
 		};
 		const handleFocusOut = (event: FocusEvent): void => {
 			const nextTarget = event.relatedTarget;
-			hasFocusWithin = nextTarget instanceof Node && currentCarousel.contains(nextTarget);
+			if (!(nextTarget instanceof Node && currentCarousel.contains(nextTarget))) {
+				hasKeyboardFocusWithin = false;
+			}
 		};
 
 		currentCarousel.addEventListener('mouseenter', handleMouseEnter);
 		currentCarousel.addEventListener('mouseleave', handleMouseLeave);
+		currentCarousel.addEventListener('pointerdown', handlePointerDown, { passive: true });
+		currentCarousel.addEventListener('keydown', handleKeyDown);
 		currentCarousel.addEventListener('focusin', handleFocusIn);
 		currentCarousel.addEventListener('focusout', handleFocusOut);
 
@@ -135,6 +145,8 @@
 		return () => {
 			currentCarousel.removeEventListener('mouseenter', handleMouseEnter);
 			currentCarousel.removeEventListener('mouseleave', handleMouseLeave);
+			currentCarousel.removeEventListener('pointerdown', handlePointerDown);
+			currentCarousel.removeEventListener('keydown', handleKeyDown);
 			currentCarousel.removeEventListener('focusin', handleFocusIn);
 			currentCarousel.removeEventListener('focusout', handleFocusOut);
 			observer?.disconnect();
@@ -168,12 +180,24 @@
 		if (!track) return;
 
 		const currentTrack = track;
-		const pauseAfterInteraction = (): void => {
-			autoplayPaused = true;
+		const handlePointerDown = (): void => {
+			isPointerInteracting = true;
+		};
+		const handlePointerEnd = (): void => {
+			isPointerInteracting = false;
 		};
 
-		currentTrack.addEventListener('pointerdown', pauseAfterInteraction, { passive: true });
-		return () => currentTrack.removeEventListener('pointerdown', pauseAfterInteraction);
+		currentTrack.addEventListener('pointerdown', handlePointerDown, { passive: true });
+		window.addEventListener('pointerup', handlePointerEnd, { passive: true });
+		window.addEventListener('pointercancel', handlePointerEnd, { passive: true });
+		window.addEventListener('blur', handlePointerEnd);
+
+		return () => {
+			currentTrack.removeEventListener('pointerdown', handlePointerDown);
+			window.removeEventListener('pointerup', handlePointerEnd);
+			window.removeEventListener('pointercancel', handlePointerEnd);
+			window.removeEventListener('blur', handlePointerEnd);
+		};
 	});
 
 	$effect(() => {
