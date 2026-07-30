@@ -59,7 +59,7 @@ test('карусель транспорта управляется кнопка�
 	await expect(previous).toBeDisabled();
 });
 
-test('автопрокрутка меняет кадр и имеет явную паузу', async ({ page }) => {
+test('автопрокрутка считает секунды и меняет кадр', async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await page.goto('/#transport');
 	await expect(page.locator('.fleet-carousel')).toBeVisible();
@@ -71,19 +71,12 @@ test('автопрокрутка меняет кадр и имеет явную 
 
 	await expect(firstThumbnail).toHaveAttribute('aria-current', 'true');
 	await expect(progress).toHaveAttribute('data-state', 'running');
-	await expect(progress).toContainText('6 сек');
-	await expect(progressFill).toHaveCSS('animation-duration', '6s');
-	await expect(secondThumbnail).toHaveAttribute('aria-current', 'true', { timeout: 7500 });
-
-	const pause = page.getByRole('button', { name: 'Остановить автопрокрутку' });
-	await pause.click();
-	await expect(progress).toHaveAttribute('data-state', 'paused');
-	await expect(progress).toContainText('Пауза');
-	await expect(progressFill).toHaveCSS('animation-play-state', 'paused');
-	await expect(page.getByRole('button', { name: 'Запустить автопрокрутку' })).toHaveAttribute(
-		'aria-pressed',
-		'true'
-	);
+	await expect(progress).toContainText('3 сек');
+	await expect(progressFill).toHaveCSS('animation-duration', '3s');
+	await expect(progress).toContainText('2 сек', { timeout: 1500 });
+	await expect(secondThumbnail).toHaveAttribute('aria-current', 'true', { timeout: 3500 });
+	await expect(progress).toContainText('3 сек');
+	await expect(page.getByRole('button', { name: 'Остановить автопрокрутку' })).toHaveCount(0);
 });
 
 test('контактные действия используют телефон и подготовленный WhatsApp', async ({ page }) => {
@@ -165,11 +158,13 @@ test('reduced motion сохраняет контент и отключает smo
 	expect(scrollBehavior).toBe('auto');
 
 	await page.locator('.fleet-carousel').scrollIntoViewIfNeeded();
-	await expect(
-		page.getByRole('button', {
-			name: 'Автопрокрутка отключена системной настройкой движения'
-		})
-	).toBeDisabled();
+	const progress = page.locator('.fleet-panel__progress');
+	await expect(progress).toHaveAttribute('data-state', 'paused');
+	await expect(progress).toContainText('Пауза');
+	await expect(page.locator('.fleet-panel__progress-fill')).toHaveCSS(
+		'animation-play-state',
+		'paused'
+	);
 });
 
 test('главный сценарий не пишет ошибок в консоль', async ({ page }) => {

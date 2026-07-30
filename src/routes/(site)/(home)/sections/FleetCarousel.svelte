@@ -8,7 +8,9 @@
 		photos: readonly FleetPhoto[];
 	}
 
-	const AUTOPLAY_DELAY = 6000;
+	const AUTOPLAY_DELAY = 3000;
+	const toCountdownSeconds = (milliseconds: number): number =>
+		Math.max(1, Math.ceil(milliseconds / 1000));
 
 	let { photos }: Props = $props();
 
@@ -24,6 +26,7 @@
 	let reducedMotion = $state(true);
 	let scrollFrame: number | undefined;
 	let autoplayRemaining = AUTOPLAY_DELAY;
+	let autoplaySeconds = $state(toCountdownSeconds(AUTOPLAY_DELAY));
 
 	const lastIndex = $derived(Math.max(photos.length - 1, 0));
 	const autoplayRunning = $derived(
@@ -42,7 +45,10 @@
 	const setActive = (index: number): void => {
 		const nextIndex = Math.min(Math.max(index, 0), lastIndex);
 
-		if (nextIndex !== activeIndex) autoplayRemaining = AUTOPLAY_DELAY;
+		if (nextIndex !== activeIndex) {
+			autoplayRemaining = AUTOPLAY_DELAY;
+			autoplaySeconds = toCountdownSeconds(AUTOPLAY_DELAY);
+		}
 		activeIndex = nextIndex;
 	};
 
@@ -60,10 +66,6 @@
 
 	const navigateManually = (index: number): void => {
 		goTo(index, true);
-	};
-
-	const toggleAutoplay = (): void => {
-		autoplayPaused = !autoplayPaused;
 	};
 
 	const syncActiveSlide = (): void => {
@@ -184,19 +186,29 @@
 		const cycleDuration = autoplayRemaining;
 		const cycleStartedAt = performance.now();
 		let cycleCompleted = false;
+		const syncCountdown = (): void => {
+			const elapsed = performance.now() - cycleStartedAt;
+			autoplaySeconds = toCountdownSeconds(Math.max(cycleDuration - elapsed, 0));
+		};
+
+		syncCountdown();
+		const countdownTimer = window.setInterval(syncCountdown, 100);
 		const timer = window.setTimeout(() => {
 			cycleCompleted = true;
 			autoplayRemaining = AUTOPLAY_DELAY;
+			autoplaySeconds = toCountdownSeconds(AUTOPLAY_DELAY);
 			autoplayDirection = nextDirection;
 			goTo(nextIndex);
 		}, cycleDuration);
 
 		return () => {
+			window.clearInterval(countdownTimer);
 			window.clearTimeout(timer);
 
 			if (!cycleCompleted && activeIndex === cycleIndex) {
 				const elapsed = performance.now() - cycleStartedAt;
 				autoplayRemaining = Math.max(cycleDuration - elapsed, 0);
+				autoplaySeconds = toCountdownSeconds(autoplayRemaining);
 			}
 		};
 	});
@@ -241,12 +253,10 @@
 			{photos}
 			{activeIndex}
 			{lastIndex}
-			{autoplayPaused}
 			{autoplayRunning}
-			{reducedMotion}
+			{autoplaySeconds}
 			autoplayDelay={AUTOPLAY_DELAY}
 			onNavigate={navigateManually}
-			onToggleAutoplay={toggleAutoplay}
 		/>
 	</div>
 </div>

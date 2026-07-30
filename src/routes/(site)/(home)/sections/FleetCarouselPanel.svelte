@@ -7,36 +7,25 @@
 		photos: readonly FleetPhoto[];
 		activeIndex: number;
 		lastIndex: number;
-		autoplayPaused: boolean;
 		autoplayRunning: boolean;
-		reducedMotion: boolean;
+		autoplaySeconds: number;
 		autoplayDelay: number;
 		onNavigate: (index: number) => void;
-		onToggleAutoplay: () => void;
 	}
 
 	let {
 		photos,
 		activeIndex,
 		lastIndex,
-		autoplayPaused,
 		autoplayRunning,
-		reducedMotion,
+		autoplaySeconds,
 		autoplayDelay,
-		onNavigate,
-		onToggleAutoplay
+		onNavigate
 	}: Props = $props();
 
 	const activePhoto = $derived(photos[activeIndex]);
-	const autoplayLabel = $derived(
-		reducedMotion
-			? $_('home.fleet.autoplayReduced')
-			: autoplayPaused
-				? $_('home.fleet.autoplayStart')
-				: $_('home.fleet.autoplayPause')
-	);
 	const autoplayDuration = $derived(
-		$_('home.fleet.autoplayDuration', { values: { seconds: autoplayDelay / 1000 } })
+		$_('home.fleet.autoplayDuration', { values: { seconds: autoplaySeconds } })
 	);
 
 	const handleKeydown = (event: KeyboardEvent): void => {
@@ -119,17 +108,6 @@
 			onclick={() => onNavigate(activeIndex + 1)}
 		>
 			<Icon name="arrow-right" size={21} strokeWidth={1.8} />
-		</button>
-		<button
-			type="button"
-			class="fleet-panel__arrow fleet-panel__arrow--autoplay"
-			aria-label={autoplayLabel}
-			aria-pressed={autoplayPaused}
-			title={autoplayLabel}
-			disabled={reducedMotion || photos.length <= 1}
-			onclick={onToggleAutoplay}
-		>
-			<Icon name={autoplayPaused ? 'play' : 'pause'} size={19} strokeWidth={1.9} />
 		</button>
 	</div>
 
@@ -272,16 +250,6 @@
 			&--previous {
 				:global(.icon) {
 					transform: rotate(180deg);
-				}
-			}
-
-			&--autoplay {
-				margin-left: 4px;
-
-				&[aria-pressed='true'] {
-					color: var(--color-ink);
-					background: var(--color-accent);
-					border-color: var(--color-accent);
 				}
 			}
 
