@@ -25,6 +25,7 @@
 	let pageVisible = $state(true);
 	let reducedMotion = $state(true);
 	let scrollFrame: number | undefined;
+	let programmaticScrollTarget: number | undefined;
 	let autoplayRemaining = AUTOPLAY_DELAY;
 	let autoplaySeconds = $state(toCountdownSeconds(AUTOPLAY_DELAY));
 
@@ -55,12 +56,20 @@
 	const goTo = (index: number): void => {
 		const nextIndex = Math.min(Math.max(index, 0), lastIndex);
 		const slide = getSlide(nextIndex);
+		const currentTrack = track;
 
 		setActive(nextIndex);
-		track?.scrollTo({
-			left: slide?.offsetLeft ?? 0,
+		if (!currentTrack || !slide) return;
+
+		programmaticScrollTarget = slide.offsetLeft;
+		currentTrack.scrollTo({
+			left: programmaticScrollTarget,
 			behavior: reducedMotion ? 'auto' : 'smooth'
 		});
+
+		if (Math.abs(currentTrack.scrollLeft - programmaticScrollTarget) <= 1) {
+			programmaticScrollTarget = undefined;
+		}
 	};
 
 	const navigateManually = (index: number): void => {
@@ -70,6 +79,11 @@
 	const syncActiveSlide = (): void => {
 		const currentTrack = track;
 		if (!currentTrack) return;
+
+		if (programmaticScrollTarget !== undefined) {
+			if (Math.abs(currentTrack.scrollLeft - programmaticScrollTarget) > 1) return;
+			programmaticScrollTarget = undefined;
+		}
 
 		let closestIndex = 0;
 		let closestDistance = Number.POSITIVE_INFINITY;
@@ -93,6 +107,11 @@
 			scrollFrame = undefined;
 			syncActiveSlide();
 		});
+	};
+
+	const handleScrollEnd = (): void => {
+		programmaticScrollTarget = undefined;
+		syncActiveSlide();
 	};
 
 	$effect(() => {
@@ -181,6 +200,7 @@
 
 		const currentTrack = track;
 		const handlePointerDown = (): void => {
+			programmaticScrollTarget = undefined;
 			isPointerInteracting = true;
 		};
 		const handlePointerEnd = (): void => {
@@ -193,6 +213,7 @@
 		window.addEventListener('blur', handlePointerEnd);
 
 		return () => {
+			programmaticScrollTarget = undefined;
 			currentTrack.removeEventListener('pointerdown', handlePointerDown);
 			window.removeEventListener('pointerup', handlePointerEnd);
 			window.removeEventListener('pointercancel', handlePointerEnd);
@@ -266,7 +287,12 @@
 >
 	<div class="fleet-carousel__stage">
 		<div class="fleet-carousel__viewport">
-			<div class="fleet-carousel__track" bind:this={track} onscroll={handleScroll}>
+			<div
+				class="fleet-carousel__track"
+				bind:this={track}
+				onscroll={handleScroll}
+				onscrollend={handleScrollEnd}
+			>
 				{#each photos as photo, index (photo.id)}
 					<FleetSlide {photo} {index} total={photos.length} />
 				{/each}

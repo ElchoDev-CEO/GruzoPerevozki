@@ -79,10 +79,70 @@ test('автопрокрутка считает секунды и меняет �
 	await expect(progress).toHaveAttribute('data-state', 'running');
 	await expect(progress).toContainText('3 сек');
 	await expect(progressFill).toHaveCSS('animation-duration', '3s');
+	await page.evaluate(() => {
+		const carousel = document.querySelector<HTMLElement>('.fleet-carousel');
+		const thumbnails = Array.from(
+			document.querySelectorAll<HTMLButtonElement>('.fleet-panel__thumbnail')
+		);
+		if (!carousel) return;
+
+		const recordActiveIndex = (): void => {
+			const activeIndex = thumbnails.findIndex(
+				(thumbnail) => thumbnail.getAttribute('aria-current') === 'true'
+			);
+			const sequence = carousel.dataset.activeSequence?.split(',').map(Number) ?? [];
+
+			if (activeIndex >= 0 && sequence.at(-1) !== activeIndex) {
+				carousel.dataset.activeSequence = [...sequence, activeIndex].join(',');
+			}
+		};
+
+		recordActiveIndex();
+		new MutationObserver(recordActiveIndex).observe(carousel, {
+			attributes: true,
+			attributeFilter: ['aria-current'],
+			subtree: true
+		});
+	});
 	await expect(progress).toContainText('2 сек', { timeout: 1500 });
 	await expect(secondThumbnail).toHaveAttribute('aria-current', 'true', { timeout: 3500 });
 	await expect(progress).toContainText('3 сек');
+	await expect(page.locator('.fleet-carousel')).toHaveAttribute('data-active-sequence', '0,1');
 	await expect(page.getByRole('button', { name: 'Остановить автопрокрутку' })).toHaveCount(0);
+});
+
+test('смена подписей карусели не сдвигает управление', async ({ page }) => {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.goto('/#transport');
+
+	const panel = page.locator('.fleet-panel');
+	const thumbnails = page.locator('.fleet-panel__thumbnail');
+	const getGeometry = () =>
+		panel.evaluate((element) => {
+			const panelTop = element.getBoundingClientRect().top;
+			const selectors = [
+				'.fleet-panel__status',
+				'.fleet-panel__progress',
+				'.fleet-panel__controls',
+				'.fleet-panel__thumbnails'
+			];
+
+			return selectors.map((selector) => {
+				const rect = element.querySelector(selector)?.getBoundingClientRect();
+				return {
+					top: Number(((rect?.top ?? 0) - panelTop).toFixed(2)),
+					height: Number((rect?.height ?? 0).toFixed(2))
+				};
+			});
+		});
+	const initialGeometry = await getGeometry();
+
+	for (let index = 1; index < 6; index += 1) {
+		await thumbnails.nth(index).evaluate((thumbnail) => (thumbnail as HTMLButtonElement).click());
+		await expect(thumbnails.nth(index)).toHaveAttribute('aria-current', 'true');
+		expect(await getGeometry()).toEqual(initialGeometry);
+	}
 });
 
 test('контактные действия используют телефон и подготовленный WhatsApp', async ({ page }) => {

@@ -23,7 +23,6 @@
 		onNavigate
 	}: Props = $props();
 
-	const activePhoto = $derived(photos[activeIndex]);
 	const autoplayDuration = $derived(
 		$_('home.fleet.autoplayDuration', { values: { seconds: autoplaySeconds } })
 	);
@@ -61,10 +60,18 @@
 			{String(activeIndex + 1).padStart(2, '0')}
 			<span>/ {String(photos.length).padStart(2, '0')}</span>
 		</p>
-		{#if activePhoto}
-			<h3>{$_(activePhoto.captionKey)}</h3>
-			<p>{$_(activePhoto.descriptionKey)}</p>
-		{/if}
+		<div class="fleet-panel__status-copy">
+			{#each photos as photo, index (photo.id)}
+				<div
+					class="fleet-panel__status-item"
+					data-active={index === activeIndex}
+					aria-hidden={index === activeIndex ? undefined : 'true'}
+				>
+					<h3>{$_(photo.captionKey)}</h3>
+					<p>{$_(photo.descriptionKey)}</p>
+				</div>
+			{/each}
+		</div>
 	</div>
 
 	<div
@@ -160,18 +167,39 @@
 				}
 			}
 
-			h3 {
-				max-width: 16ch;
+			&-copy {
+				display: grid;
 				margin-top: 18px;
-				font-size: clamp(1.75rem, 3vw, 2.75rem);
-				font-weight: 720;
 			}
 
-			> p:last-child {
-				max-width: 34rem;
-				margin-top: 14px;
-				color: var(--color-on-dark-muted);
-				line-height: 1.65;
+			&-item {
+				grid-area: 1 / 1;
+				min-width: 0;
+				visibility: hidden;
+				opacity: 0;
+				transform: translateY(4px);
+				transition:
+					opacity var(--motion-fast) var(--ease-standard),
+					transform var(--motion-fast) var(--ease-out);
+
+				&[data-active='true'] {
+					visibility: visible;
+					opacity: 1;
+					transform: translateY(0);
+				}
+
+				h3 {
+					max-width: 16ch;
+					font-size: clamp(1.75rem, 3vw, 2.75rem);
+					font-weight: 720;
+				}
+
+				p {
+					max-width: 34rem;
+					margin-top: 14px;
+					color: var(--color-on-dark-muted);
+					line-height: 1.65;
+				}
 			}
 		}
 
