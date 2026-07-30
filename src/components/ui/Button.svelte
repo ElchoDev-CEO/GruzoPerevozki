@@ -13,7 +13,7 @@
 </script>
 
 {#if href}
-	<a class="btn btn--{variant}" {href} aria-label={ariaLabel}>{@render children?.()}</a>
+	<a class="btn btn--{variant}" {href} {onclick} aria-label={ariaLabel}>{@render children?.()}</a>
 {:else}
 	<button class="btn btn--{variant}" {onclick} aria-label={ariaLabel}>
 		{@render children?.()}

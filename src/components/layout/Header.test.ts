@@ -14,6 +14,7 @@ describe('Header', () => {
 		render(Header);
 		const toggle = screen.getByLabelText('menu');
 		expect(toggle).toHaveAttribute('aria-expanded', 'false');
+		expect(screen.getByRole('link', { name: 'Услуги' })).toHaveAttribute('href', '#services');
 	});
 
 	it('клик по бургеру открывает мобильное меню', async () => {

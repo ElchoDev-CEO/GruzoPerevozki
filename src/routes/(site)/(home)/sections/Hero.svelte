@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { _ } from 'svelte-i18n';
 	import Icon from '@iconify/svelte';
-	import { smoothScrollToId } from '@/lib/utils/scroll';
 </script>
 
 <section class="hero">
@@ -15,19 +14,25 @@
 			<p class="hero__sub">{$_('home.hero.sub')}</p>
 
 			<div class="hero__actions">
-				<button class="hero__cta hero__cta--primary" onclick={() => smoothScrollToId('contact')}>
+				<a class="hero__cta hero__cta--primary" href="#contact">
 					{$_('home.hero.btnPrimary')}
-				</button>
-				<button class="hero__cta hero__cta--outline" onclick={() => smoothScrollToId('contact')}>
+				</a>
+				<a class="hero__cta hero__cta--outline" href="#contact">
 					<Icon icon="lucide:phone" width="20" height="20" />
 					{$_('home.hero.btnSecondary')}
-				</button>
+				</a>
 			</div>
 		</div>
 
 		<div class="hero__media">
 			<div class="hero__image-wrap">
-				<img src="/images/hero-truck.jpg" alt={$_('home.hero.heading')} width="1080" height="720" />
+				<img
+					src="/images/hero-truck.jpg"
+					alt={$_('home.meta.ogImageAlt')}
+					width="1080"
+					height="1440"
+					fetchpriority="high"
+				/>
 				<div class="hero__overlay"></div>
 			</div>
 			<div class="hero__stats">

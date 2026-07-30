@@ -1,7 +1,8 @@
 export const footerNav = [
-	{ labelKey: 'home.nav.services', targetId: 'services' },
-	{ labelKey: 'home.nav.regions', targetId: 'regions' },
-	{ labelKey: 'home.nav.contact', targetId: 'contact' }
+	{ labelKey: 'home.footer.navAbout', href: '#about' },
+	{ labelKey: 'home.nav.services', href: '#services' },
+	{ labelKey: 'home.nav.regions', href: '#regions' },
+	{ labelKey: 'home.nav.contact', href: '#contact' }
 ];
 
 export const footerServiceKeys = [

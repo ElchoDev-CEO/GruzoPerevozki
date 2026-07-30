@@ -5,7 +5,7 @@
 	import { aboutStats } from '@/lib/data/about';
 </script>
 
-<section class="about">
+<section id="about" class="about">
 	<div class="container">
 		<SectionHeading
 			title={$_('home.about.h2')}

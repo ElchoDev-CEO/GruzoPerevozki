@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+	<title>Cargo KG</title>
+	<rect width="64" height="64" rx="14" fill="#ffc107"/>
+	<path fill="#111827" d="M9 17h30v25H9zM39 25h8l8 10v7H39z"/>
+	<circle cx="20" cy="44" r="6" fill="#111827" stroke="#ffc107" stroke-width="3"/>
+	<circle cx="47" cy="44" r="6" fill="#111827" stroke="#ffc107" stroke-width="3"/>
+</svg>

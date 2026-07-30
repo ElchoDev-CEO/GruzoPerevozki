@@ -1,11 +1,11 @@
 export interface NavLink {
 	labelKey: string;
-	targetId: string | null; // null => scrollToTop
+	href: string;
 }
 
 export const navLinks: NavLink[] = [
-	{ labelKey: 'home.nav.home', targetId: null },
-	{ labelKey: 'home.nav.services', targetId: 'services' },
-	{ labelKey: 'home.nav.regions', targetId: 'regions' },
-	{ labelKey: 'home.nav.contact', targetId: 'contact' }
+	{ labelKey: 'home.nav.home', href: '/' },
+	{ labelKey: 'home.nav.services', href: '#services' },
+	{ labelKey: 'home.nav.regions', href: '#regions' },
+	{ labelKey: 'home.nav.contact', href: '#contact' }
 ];

@@ -3,17 +3,10 @@
 	import Icon from '@iconify/svelte';
 	import { site } from '@/lib/config/site';
 	import { navLinks } from '@/lib/data/nav';
-	import { smoothScrollToId, scrollToTop } from '@/lib/utils/scroll';
 	import IconBox from '@/components/ui/IconBox.svelte';
 	import Button from '@/components/ui/Button.svelte';
 
 	let menuOpen = $state(false);
-
-	const go = (targetId: string | null): void => {
-		if (targetId) smoothScrollToId(targetId);
-		else scrollToTop();
-		menuOpen = false;
-	};
 
 	$effect(() => {
 		const onResize = (): void => {
@@ -26,19 +19,19 @@
 
 <header class="header">
 	<div class="container header__inner">
-		<button class="header__logo" onclick={() => go(null)}>
+		<a class="header__logo" href="/" aria-label={site.brand}>
 			<IconBox icon="lucide:truck" bg="var(--brand)" size={48} hoverScale />
 			<span class="header__brand">{site.brand}</span>
-		</button>
+		</a>
 
 		<nav class="header__nav">
 			{#each navLinks as link}
-				<button class="header__link" onclick={() => go(link.targetId)}>{$_(link.labelKey)}</button>
+				<a class="header__link" href={link.href}>{$_(link.labelKey)}</a>
 			{/each}
 		</nav>
 
 		<div class="header__cta">
-			<Button variant="primary" onclick={() => go('contact')}>{$_('home.nav.cta')}</Button>
+			<Button variant="primary" href="#contact">{$_('home.nav.cta')}</Button>
 		</div>
 
 		<button
@@ -54,11 +47,13 @@
 	{#if menuOpen}
 		<div class="container header__mobile">
 			{#each navLinks as link}
-				<button class="header__mobile-link" onclick={() => go(link.targetId)}>
+				<a class="header__mobile-link" href={link.href} onclick={() => (menuOpen = false)}>
 					{$_(link.labelKey)}
-				</button>
+				</a>
 			{/each}
-			<Button variant="primary" onclick={() => go('contact')}>{$_('home.nav.cta')}</Button>
+			<Button variant="primary" href="#contact" onclick={() => (menuOpen = false)}>
+				{$_('home.nav.cta')}
+			</Button>
 		</div>
 	{/if}
 </header>
@@ -85,8 +80,6 @@
 			display: flex;
 			align-items: center;
 			gap: 8px;
-			background: none;
-			border: none;
 
 			&:hover :global(.icon-box--hover) {
 				transform: scale(1.1);
@@ -106,8 +99,6 @@
 		}
 
 		&__link {
-			background: none;
-			border: none;
 			font-weight: 500;
 			color: var(--gray-700);
 			transition: color 0.2s ease;
@@ -145,8 +136,6 @@
 		&__mobile-link {
 			text-align: left;
 			padding: 12px 16px;
-			background: none;
-			border: none;
 			color: var(--gray-700);
 			border-radius: var(--radius-lg);
 
