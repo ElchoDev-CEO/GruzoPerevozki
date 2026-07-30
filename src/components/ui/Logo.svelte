@@ -24,7 +24,7 @@
 
 <style lang="scss">
 	.logo {
-		display: inline-flex;
+		display: flex;
 		align-items: center;
 		gap: 10px;
 		max-width: 100%;

@@ -30,6 +30,33 @@ test('desktop-навигация прокручивает к транспорт�
 	await expect(page.locator('#transport')).toBeInViewport({ ratio: 0.1 });
 });
 
+test('логотип шапки выровнен по центру без строчного зазора', async ({ page }) => {
+	await page.setViewportSize({ width: 1280, height: 800 });
+	await page.goto('/');
+
+	const geometry = await page.locator('.header__logo').evaluate((link) => {
+		const getGeometry = (element: Element | null) => {
+			const rect = element?.getBoundingClientRect();
+
+			return {
+				height: rect?.height ?? 0,
+				centerY: rect ? rect.top + rect.height / 2 : 0
+			};
+		};
+
+		return {
+			link: getGeometry(link),
+			logo: getGeometry(link.querySelector('.logo')),
+			mark: getGeometry(link.querySelector('.logo__mark')),
+			wordmark: getGeometry(link.querySelector('.logo__wordmark'))
+		};
+	});
+
+	expect(geometry.link.height).toBeCloseTo(geometry.logo.height, 1);
+	expect(geometry.link.centerY).toBeCloseTo(geometry.logo.centerY, 1);
+	expect(geometry.mark.centerY).toBeCloseTo(geometry.wordmark.centerY, 1);
+});
+
 test('карусель транспорта управляется кнопками и клавиатурой', async ({ page }) => {
 	await page.setViewportSize({ width: 1280, height: 900 });
 	await page.goto('/#transport');
