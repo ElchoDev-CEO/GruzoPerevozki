@@ -1,7 +1,7 @@
 export const site = {
 	brand: 'Cargo KG',
-	phones: ['+996 555 123 456', '+996 700 987 654'],
-	whatsapp: '996555123456',
+	phones: ['+996 708 500 935'],
+	whatsapp: '996708500935',
 	email: 'info@cargo-kg.com',
 	address: 'г. Бишкек, ул. Ахунбаева 123\nКыргызская Республика',
 	addressShort: 'г. Бишкек, ул. Ахунбаева 123',

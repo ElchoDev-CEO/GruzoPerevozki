@@ -28,10 +28,10 @@ test('clicking Услуги nav button scrolls #services into viewport', async (
 	await expect(servicesSection).toBeInViewport({ ratio: 0.1 });
 });
 
-test('WhatsApp link with wa.me/996555123456 exists', async ({ page }) => {
+test('WhatsApp link with wa.me/996708500935 exists', async ({ page }) => {
 	await page.goto('/');
 
-	// The floating WhatsAppButton renders an <a> with href="https://wa.me/996555123456"
-	const waLink = page.locator('a[href*="wa.me/996555123456"]').first();
+	// The floating WhatsAppButton renders an <a> with href="https://wa.me/996708500935"
+	const waLink = page.locator('a[href*="wa.me/996708500935"]').first();
 	await expect(waLink).toBeAttached();
 });
