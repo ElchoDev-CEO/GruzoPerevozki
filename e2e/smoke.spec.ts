@@ -65,12 +65,20 @@ test('автопрокрутка меняет кадр и имеет явную 
 
 	const firstThumbnail = page.getByRole('button', { name: '1. Транспорт на маршруте' });
 	const secondThumbnail = page.getByRole('button', { name: '2. Груз в кузове' });
+	const progress = page.locator('.fleet-panel__progress');
+	const progressFill = page.locator('.fleet-panel__progress-fill');
 
 	await expect(firstThumbnail).toHaveAttribute('aria-current', 'true');
+	await expect(progress).toHaveAttribute('data-state', 'running');
+	await expect(progress).toContainText('6 сек');
+	await expect(progressFill).toHaveCSS('animation-duration', '6s');
 	await expect(secondThumbnail).toHaveAttribute('aria-current', 'true', { timeout: 7500 });
 
 	const pause = page.getByRole('button', { name: 'Остановить автопрокрутку' });
 	await pause.click();
+	await expect(progress).toHaveAttribute('data-state', 'paused');
+	await expect(progress).toContainText('Пауза');
+	await expect(progressFill).toHaveCSS('animation-play-state', 'paused');
 	await expect(page.getByRole('button', { name: 'Запустить автопрокрутку' })).toHaveAttribute(
 		'aria-pressed',
 		'true'

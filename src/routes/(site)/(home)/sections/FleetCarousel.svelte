@@ -23,6 +23,7 @@
 	let pageVisible = $state(true);
 	let reducedMotion = $state(true);
 	let scrollFrame: number | undefined;
+	let autoplayRemaining = AUTOPLAY_DELAY;
 
 	const lastIndex = $derived(Math.max(photos.length - 1, 0));
 	const autoplayRunning = $derived(
@@ -39,7 +40,10 @@
 		track?.querySelector<HTMLElement>(`[data-slide-index="${index}"]`) ?? undefined;
 
 	const setActive = (index: number): void => {
-		activeIndex = Math.min(Math.max(index, 0), lastIndex);
+		const nextIndex = Math.min(Math.max(index, 0), lastIndex);
+
+		if (nextIndex !== activeIndex) autoplayRemaining = AUTOPLAY_DELAY;
+		activeIndex = nextIndex;
 	};
 
 	const goTo = (index: number, pauseAutoplay = false): void => {
@@ -173,15 +177,28 @@
 	$effect(() => {
 		if (!autoplayRunning) return;
 
+		const cycleIndex = activeIndex;
 		const nextDirection: 1 | -1 =
 			activeIndex >= lastIndex ? -1 : activeIndex <= 0 ? 1 : autoplayDirection;
 		const nextIndex = activeIndex + nextDirection;
+		const cycleDuration = autoplayRemaining;
+		const cycleStartedAt = performance.now();
+		let cycleCompleted = false;
 		const timer = window.setTimeout(() => {
+			cycleCompleted = true;
+			autoplayRemaining = AUTOPLAY_DELAY;
 			autoplayDirection = nextDirection;
 			goTo(nextIndex);
-		}, AUTOPLAY_DELAY);
+		}, cycleDuration);
 
-		return () => window.clearTimeout(timer);
+		return () => {
+			window.clearTimeout(timer);
+
+			if (!cycleCompleted && activeIndex === cycleIndex) {
+				const elapsed = performance.now() - cycleStartedAt;
+				autoplayRemaining = Math.max(cycleDuration - elapsed, 0);
+			}
+		};
 	});
 
 	$effect(() => {
@@ -227,6 +244,7 @@
 			{autoplayPaused}
 			{autoplayRunning}
 			{reducedMotion}
+			autoplayDelay={AUTOPLAY_DELAY}
 			onNavigate={navigateManually}
 			onToggleAutoplay={toggleAutoplay}
 		/>

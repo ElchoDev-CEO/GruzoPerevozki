@@ -10,6 +10,7 @@
 		autoplayPaused: boolean;
 		autoplayRunning: boolean;
 		reducedMotion: boolean;
+		autoplayDelay: number;
 		onNavigate: (index: number) => void;
 		onToggleAutoplay: () => void;
 	}
@@ -21,6 +22,7 @@
 		autoplayPaused,
 		autoplayRunning,
 		reducedMotion,
+		autoplayDelay,
 		onNavigate,
 		onToggleAutoplay
 	}: Props = $props();
@@ -32,6 +34,9 @@
 			: autoplayPaused
 				? $_('home.fleet.autoplayStart')
 				: $_('home.fleet.autoplayPause')
+	);
+	const autoplayDuration = $derived(
+		$_('home.fleet.autoplayDuration', { values: { seconds: autoplayDelay / 1000 } })
 	);
 
 	const handleKeydown = (event: KeyboardEvent): void => {
@@ -71,6 +76,25 @@
 			<h3>{$_(activePhoto.captionKey)}</h3>
 			<p>{$_(activePhoto.descriptionKey)}</p>
 		{/if}
+	</div>
+
+	<div
+		class="fleet-panel__progress"
+		data-state={autoplayRunning ? 'running' : 'paused'}
+		style={`--autoplay-duration: ${autoplayDelay}ms`}
+		aria-hidden="true"
+	>
+		<div class="fleet-panel__progress-meta">
+			<span>{$_('home.fleet.autoplayProgress')}</span>
+			<span>
+				{autoplayRunning ? autoplayDuration : $_('home.fleet.autoplayProgressPaused')}
+			</span>
+		</div>
+		<div class="fleet-panel__progress-track">
+			{#key activeIndex}
+				<span class="fleet-panel__progress-fill"></span>
+			{/key}
+		</div>
 	</div>
 
 	<div class="fleet-panel__controls">
@@ -173,10 +197,60 @@
 			}
 		}
 
+		&__progress {
+			--progress-play-state: paused;
+			--progress-status-color: var(--color-on-dark-muted);
+
+			display: grid;
+			gap: 8px;
+			margin-top: 24px;
+
+			&[data-state='running'] {
+				--progress-play-state: running;
+				--progress-status-color: var(--color-accent);
+			}
+
+			&-meta {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 16px;
+				color: var(--color-on-dark-muted);
+				font-family: var(--font-mono);
+				font-size: 0.625rem;
+				font-weight: 700;
+				letter-spacing: 0.1em;
+				line-height: 1.2;
+				text-transform: uppercase;
+
+				span:last-child {
+					color: var(--progress-status-color);
+					transition: color var(--motion-fast) var(--ease-standard);
+				}
+			}
+
+			&-track {
+				position: relative;
+				height: 2px;
+				overflow: hidden;
+				background: rgb(var(--rgb-surface) / 0.13);
+
+				.fleet-panel__progress-fill {
+					position: absolute;
+					inset: 0;
+					background: var(--color-accent);
+					transform: scaleX(0);
+					transform-origin: left center;
+					animation: fleet-autoplay-progress var(--autoplay-duration) linear forwards;
+					animation-play-state: var(--progress-play-state);
+				}
+			}
+		}
+
 		&__controls {
 			display: flex;
 			gap: 10px;
-			margin-top: 24px;
+			margin-top: 18px;
 		}
 
 		&__arrow {
@@ -289,7 +363,7 @@
 		@media (min-width: 64rem) {
 			padding: 18px 10px 8px 0;
 
-			&__controls {
+			&__progress {
 				margin-top: auto;
 			}
 		}
@@ -309,6 +383,16 @@
 					transform: none;
 				}
 			}
+		}
+	}
+
+	@keyframes fleet-autoplay-progress {
+		from {
+			transform: scaleX(0);
+		}
+
+		to {
+			transform: scaleX(1);
 		}
 	}
 </style>
